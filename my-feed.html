@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Digest — your feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root{
+    --paper:#f6f3ec;
+    --paper-raised:#fbf9f4;
+    --ink:#1c2b30;
+    --ink-soft:#4b5c60;
+    --rule:#d9d2c2;
+    --teal:#1b4a52;
+    --teal-deep:#123338;
+    --amber:#c17a2e;
+    --amber-soft:#e7d9c3;
+    --danger:#a34430;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top: env(safe-area-inset-top, 0px);}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{font-family:'Source Serif 4',Georgia,serif;}
+
+  .masthead{
+    padding:28px 20px 18px;
+    border-bottom:1px solid var(--rule);
+    background:var(--paper-raised);
+  }
+  .masthead-inner{max-width:640px;margin:0 auto;}
+  .masthead h1{
+    font-size:28px;
+    font-weight:700;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+    color:var(--teal-deep);
+  }
+  .masthead .dateline{
+    font-size:13px;
+    color:var(--ink-soft);
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+
+  .tabs{
+    display:flex;
+    gap:4px;
+    max-width:640px;
+    margin:16px auto 0;
+    padding:0 20px;
+  }
+  .tab-btn{
+    flex:1;
+    padding:10px 12px;
+    background:none;
+    border:none;
+    border-bottom:2px solid transparent;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .tab-btn.active{
+    color:var(--teal-deep);
+    border-bottom-color:var(--amber);
+  }
+  .tab-btn:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+
+  main{max-width:640px;margin:0 auto;padding:20px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* --- Cards / feed --- */
+  .entry{
+    display:flex;
+    gap:14px;
+    padding:16px 0;
+    border-bottom:1px solid var(--rule);
+  }
+  .entry:last-child{border-bottom:none;}
+  .entry img{
+    width:120px;
+    height:68px;
+    object-fit:cover;
+    border-radius:4px;
+    background:var(--rule);
+    flex-shrink:0;
+  }
+  .entry-body{min-width:0;flex:1;}
+  .entry-channel{
+    font-size:12px;
+    font-weight:600;
+    color:var(--teal);
+    text-transform:none;
+    margin-bottom:2px;
+  }
+  .entry-title{
+    font-size:15px;
+    font-weight:600;
+    line-height:1.35;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .entry-title a{color:inherit;text-decoration:none;}
+  .entry-title a:hover{text-decoration:underline;}
+  .entry-meta{font-size:12px;color:var(--ink-soft);}
+
+  /* --- Empty / status states --- */
+  .status{
+    padding:40px 8px;
+    text-align:center;
+    color:var(--ink-soft);
+  }
+  .status h3{color:var(--ink);margin:0 0 6px;font-size:18px;}
+  .status p{font-size:14px;line-height:1.5;margin:0 auto;max-width:420px;}
+
+  /* --- Buttons --- */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:11px 20px;
+    border-radius:3px;
+    border:1px solid var(--teal-deep);
+    background:var(--teal-deep);
+    color:var(--paper-raised);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:none;
+  }
+  .btn:hover{background:var(--teal);}
+  .btn.secondary{
+    background:none;
+    color:var(--teal-deep);
+  }
+  .btn.secondary:hover{background:var(--amber-soft);}
+  .btn:disabled{opacity:.5;cursor:default;}
+
+  /* --- Settings --- */
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--rule);
+    border-radius:3px;
+    background:var(--paper-raised);
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+  }
+  .field input:focus{outline:2px solid var(--teal);outline-offset:1px;}
+  .field .hint{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.5;}
+  .setup-steps{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:16px 18px;
+    margin-bottom:20px;
+    font-size:13px;
+    line-height:1.6;
+    color:var(--ink-soft);
+  }
+  .setup-steps ol{margin:8px 0 0;padding-left:20px;}
+  .setup-steps code{
+    background:var(--amber-soft);
+    padding:1px 5px;
+    border-radius:2px;
+    font-size:12px;
+  }
+  .setup-steps a{color:var(--teal);}
+
+  .signed-in-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+
+  /* --- Instagram launcher --- */
+  .ig-card{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:28px 24px;
+    text-align:center;
+  }
+  .ig-card h2{font-size:20px;margin:0 0 8px;}
+  .ig-card p{font-size:14px;color:var(--ink-soft);line-height:1.6;margin:0 0 20px;}
+  .ig-steps{
+    text-align:left;
+    font-size:13px;
+    color:var(--ink-soft);
+    background:var(--paper);
+    border-radius:4px;
+    padding:14px 18px;
+    margin-top:20px;
+    line-height:1.7;
+  }
+
+  .spinner{
+    width:16px;height:16px;
+    border:2px solid var(--amber-soft);
+    border-top-color:var(--amber);
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .progress-line{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  footer{
+    max-width:640px;
+    margin:0 auto;
+    padding:24px 20px 40px;
+    font-size:12px;
+    color:var(--ink-soft);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <h1>The Digest</h1>
+    <div class="dateline">
+      <span id="dateline-date"></span>
+      <span id="dateline-count"></span>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="youtube">YouTube</button>
+  <button class="tab-btn" data-tab="instagram">Instagram</button>
+  <button class="tab-btn" data-tab="settings">Settings</button>
+</div>
+
+<main>
+
+  <!-- YOUTUBE -->
+  <section class="panel active" id="panel-youtube">
+    <div id="yt-signed-out" class="status">
+      <h3>Not connected yet</h3>
+      <p>Connect your Google account to pull recent uploads from the channels you're subscribed to.</p>
+      <div style="margin-top:18px;">
+        <button class="btn" id="yt-connect-btn">Connect Google account</button>
+      </div>
+      <p style="margin-top:14px;font-size:12px;">Needs a one-time setup in Settings first.</p>
+    </div>
+
+    <div id="yt-signed-in" style="display:none;">
+      <div class="signed-in-row">
+        <span id="yt-account-label">Connected</span>
+        <button class="btn secondary" id="yt-refresh-btn" style="padding:6px 14px;font-size:13px;">Refresh</button>
+      </div>
+      <div id="yt-progress" class="progress-line" style="display:none;">
+        <span class="spinner"></span>
+        <span id="yt-progress-text">Loading…</span>
+      </div>
+      <div id="yt-feed"></div>
+    </div>
+  </section>
+
+  <!-- INSTAGRAM -->
+  <section class="panel" id="panel-instagram">
+    <div class="ig-card">
+      <h2>Instagram doesn't allow this</h2>
+      <p>Instagram has no API that returns a feed of posts from people you follow — not even for a personal app like this one. The closest real thing is Instagram's own "Following" filter, one tap away below.</p>
+      <a class="btn" href="https://www.instagram.com/" target="_blank" rel="noopener">Open Instagram</a>
+      <div class="ig-steps">
+        Once it opens: tap the <strong>Instagram</strong> wordmark at the top of the Home feed → choose <strong>Following</strong>. That switches you to a chronological feed of only the people you follow, straight from Instagram itself.
+        <br><br>
+        If you don't see that option, Instagram hasn't rolled it out to your account — there's no workaround on our end that wouldn't break their Terms of Service.
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="panel" id="panel-settings">
+    <div class="setup-steps">
+      <strong>One-time setup — takes about 10 minutes</strong>
+      <ol>
+        <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">console.cloud.google.com</a> and create a new project (any name).</li>
+        <li>Under <em>APIs &amp; Services → Library</em>, enable <strong>YouTube Data API v3</strong>.</li>
+        <li>Under <em>APIs &amp; Services → OAuth consent screen</em>, choose <strong>External</strong>, fill in the required fields, and add yourself as a test user.</li>
+        <li>Under <em>APIs &amp; Services → Credentials → Create Credentials → OAuth client ID</strong>, choose type <strong>Web application</strong>.</li>
+        <li>Under <em>Authorized JavaScript origins</em>, add the exact address this page is running at (e.g. <code>http://localhost:8000</code> if you're serving it locally, or your GitHub Pages URL). Note: opening the file directly with <code>file://</code> won't work — Google requires a real http/https origin, so serve it locally (<code>python3 -m http.server</code> in the folder works) or host it somewhere like GitHub Pages.</li>
+        <li>Copy the <strong>Client ID</strong> it gives you and paste it below.</li>
+      </ol>
+    </div>
+
+    <div class="field">
+      <label for="client-id-input">Google OAuth Client ID</label>
+      <input type="text" id="client-id-input" placeholder="1234567890-abc...apps.googleusercontent.com">
+      <div class="hint">Stored only in this browser, never sent anywhere but Google.</div>
+    </div>
+    <button class="btn" id="save-client-id-btn">Save</button>
+    <span id="save-confirm" style="margin-left:10px;font-size:13px;color:var(--teal);display:none;">Saved.</span>
+
+    <div class="field" style="margin-top:24px;">
+      <label>Videos per channel</label>
+      <input type="number" id="videos-per-channel" min="1" max="10" value="3">
+      <div class="hint">How many recent uploads to pull per subscribed channel. Higher = slower and uses more of your daily API quota.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Runs entirely in your browser. Nothing is sent to any server but Google's own APIs.
+</footer>
+
+<script>
+(function(){
+  const $ = (s, el=document) => el.querySelector(s);
+  const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+
+  // ---------- Tabs ----------
+  $$('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.tab-btn').forEach(b => b.classList.remove('active'));
+      $$('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      $('#panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---------- Dateline ----------
+  $('#dateline-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+
+  // ---------- Settings persistence ----------
+  const clientIdInput = $('#client-id-input');
+  const videosPerChannelInput = $('#videos-per-channel');
+  clientIdInput.value = localStorage.getItem('yt_client_id') || '';
+  videosPerChannelInput.value = localStorage.getItem('yt_videos_per_channel') || '3';
+
+  $('#save-client-id-btn').addEventListener('click', () => {
+    localStorage.setItem('yt_client_id', clientIdInput.value.trim());
+    localStorage.setItem('yt_videos_per_channel', videosPerChannelInput.value);
+    const confirm = $('#save-confirm');
+    confirm.style.display = 'inline';
+    setTimeout(() => confirm.style.display = 'none', 2000);
+    initTokenClient();
+  });
+
+  // ---------- Google auth ----------
+  let tokenClient = null;
+  let accessToken = localStorage.getItem('yt_access_token') || null;
+  let tokenExpiry = parseInt(localStorage.getItem('yt_token_expiry') || '0', 10);
+
+  function initTokenClient(){
+    const clientId = localStorage.getItem('yt_client_id');
+    if (!clientId || !window.google || !google.accounts) return;
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'https://www.googleapis.com/auth/youtube.readonly',
+      callback: (resp) => {
+        if (resp.error) {
+          showYtError('Google sign-in failed: ' + resp.error);
+          return;
+        }
+        accessToken = resp.access_token;
+        tokenExpiry = Date.now() + (resp.expires_in * 1000);
+        localStorage.setItem('yt_access_token', accessToken);
+        localStorage.setItem('yt_token_expiry', String(tokenExpiry));
+        enterSignedInState();
+        loadFeed();
+      }
+    });
+  }
+
+  window.addEventListener('load', () => {
+    // google script loads async; poll briefly
+    let tries = 0;
+    const iv = setInterval(() => {
+      tries++;
+      if (window.google && google.accounts) {
+        clearInterval(iv);
+        initTokenClient();
+        if (accessToken && tokenExpiry > Date.now()) {
+          enterSignedInState();
+          loadFeed();
+        }
+      } else if (tries > 40) {
+        clearInterval(iv);
+      }
+    }, 100);
+  });
+
+  $('#yt-connect-btn').addEventListener('click', () => {
+    const clientId = localStorage.getItem('yt_client_id');
+    if (!clientId) {
+      alert('Add your Google OAuth Client ID in Settings first.');
+      $$('.tab-btn').find(b => b.dataset.tab === 'settings')?.click();
+      $$('.tab-btn').forEach(b => b.classList.remove('active'));
+      $('[data-tab="settings"]').classList.add('active');
+      $$('.panel').forEach(p => p.classList.remove('active'));
+      $('#panel-settings').classList.add('active');
+      return;
+    }
+    if (!tokenClient) initTokenClient();
+    tokenClient.requestAccessToken({ prompt: accessToken ? '' : 'consent' });
+  });
+
+  $('#yt-refresh-btn').addEventListener('click', () => loadFeed());
+
+  function enterSignedInState(){
+    $('#yt-signed-out').style.display = 'none';
+    $('#yt-signed-in').style.display = 'block';
+    $('#yt-account-label').textContent = 'Connected';
+  }
+
+  function showYtError(msg){
+    $('#yt-progress').style.display = 'none';
+    $('#yt-feed').innerHTML = `<div class="status"><h3>Something went wrong</h3><p>${escapeHtml(msg)}</p></div>`;
+  }
+
+  // ---------- Feed loading ----------
+  async function apiFetch(url){
+    const res = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+    if (res.status === 401) throw new Error('AUTH_EXPIRED');
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body?.error?.message || ('YouTube API error ' + res.status));
+    }
+    return res.json();
+  }
+
+  async function loadFeed(){
+    const progress = $('#yt-progress');
+    const progressText = $('#yt-progress-text');
+    const feedEl = $('#yt-feed');
+    progress.style.display = 'flex';
+    feedEl.innerHTML = '';
+    progressText.textContent = 'Fetching your subscriptions…';
+
+    try {
+      // 1. Get subscriptions (up to 150, 3 pages)
+      let subs = [];
+      let pageToken = '';
+      for (let page = 0; page < 3; page++) {
+        const url = `https://www.googleapis.com/youtube/v3/subscriptions?part=snippet&mine=true&maxResults=50&order=alphabetical` + (pageToken ? `&pageToken=${pageToken}` : '');
+        const data = await apiFetch(url);
+        subs = subs.concat(data.items || []);
+        pageToken = data.nextPageToken;
+        if (!pageToken) break;
+      }
+
+      if (subs.length === 0) {
+        $('#dateline-count').textContent = '';
+        progress.style.display = 'none';
+        feedEl.innerHTML = `<div class="status"><h3>No subscriptions found</h3><p>This Google account doesn't appear to be subscribed to any channels.</p></div>`;
+        return;
+      }
+
+      const channelIds = subs.map(s => s.snippet.resourceId.channelId);
+
+      // 2. Get uploads playlist ID for each channel, batched 50 at a time
+      progressText.textContent = `Looking up ${channelIds.length} channels…`;
+      let uploadsPlaylists = []; // { channelId, title, thumbnail, playlistId }
+      for (let i = 0; i < channelIds.length; i += 50) {
+        const batch = channelIds.slice(i, i + 50);
+        const url = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails,snippet&id=${batch.join(',')}`;
+        const data = await apiFetch(url);
+        (data.items || []).forEach(ch => {
+          uploadsPlaylists.push({
+            channelId: ch.id,
+            title: ch.snippet.title,
+            playlistId: ch.contentDetails?.relatedPlaylists?.uploads
+          });
+        });
+      }
+      uploadsPlaylists = uploadsPlaylists.filter(c => c.playlistId);
+
+      // 3. Get recent uploads per channel
+      const perChannel = Math.max(1, Math.min(10, parseInt(videosPerChannelInput.value, 10) || 3));
+      let allVideos = [];
+      let done = 0;
+      const concurrency = 6;
+      let idx = 0;
+
+      async function worker(){
+        while (idx < uploadsPlaylists.length) {
+          const ch = uploadsPlaylists[idx++];
+          try {
+            const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=${perChannel}&playlistId=${ch.playlistId}`;
+            const data = await apiFetch(url);
+            (data.items || []).forEach(item => {
+              const sn = item.snippet;
+              if (!sn || !sn.resourceId) return;
+              allVideos.push({
+                channelTitle: sn.channelTitle || ch.title,
+                title: sn.title,
+                publishedAt: sn.publishedAt,
+                videoId: sn.resourceId.videoId,
+                thumbnail: sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || ''
+              });
+            });
+          } catch (e) {
+            // skip channels that fail (private uploads playlist, deleted, etc.)
+          }
+          done++;
+          progressText.textContent = `Loading uploads… ${done}/${uploadsPlaylists.length} channels`;
+        }
+      }
+
+      await Promise.all(Array.from({length: Math.min(concurrency, uploadsPlaylists.length)}, worker));
+
+      allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+      allVideos = allVideos.slice(0, 150);
+
+      progress.style.display = 'none';
+      $('#dateline-count').textContent = `${allVideos.length} videos · ${uploadsPlaylists.length} channels`;
+
+      if (allVideos.length === 0) {
+        feedEl.innerHTML = `<div class="status"><h3>Nothing recent</h3><p>Your subscribed channels haven't posted anything retrievable lately.</p></div>`;
+        return;
+      }
+
+      feedEl.innerHTML = allVideos.map(v => `
+        <div class="entry">
+          <img src="${v.thumbnail}" alt="" loading="lazy">
+          <div class="entry-body">
+            <div class="entry-channel">${escapeHtml(v.channelTitle)}</div>
+            <div class="entry-title"><a href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank" rel="noopener">${escapeHtml(v.title)}</a></div>
+            <div class="entry-meta">${timeAgo(v.publishedAt)}</div>
+          </div>
+        </div>
+      `).join('');
+
+    } catch (err) {
+      if (err.message === 'AUTH_EXPIRED') {
+        accessToken = null;
+        localStorage.removeItem('yt_access_token');
+        $('#yt-signed-in').style.display = 'none';
+        $('#yt-signed-out').style.display = 'block';
+        progress.style.display = 'none';
+        return;
+      }
+      showYtError(err.message || String(err));
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function timeAgo(iso){
+    const d = new Date(iso);
+    const diffMs = Date.now() - d.getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return `${days}d ago`;
+    return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year: d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+  }
+
+  // init settings tab click helper used above
+  document.querySelectorAll('[data-tab="settings"]');
+})();
+</script>
+
+</body>
+</html>
