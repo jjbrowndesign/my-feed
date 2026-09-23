@@ -6,20 +6,29 @@
 <title>The Digest — your feed</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text&family=Overpass:ital,wght@0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
-    --paper:#f6f3ec;
-    --paper-raised:#fbf9f4;
-    --ink:#1c2b30;
-    --ink-soft:#4b5c60;
-    --rule:#d9d2c2;
-    --teal:#1b4a52;
-    --teal-deep:#123338;
-    --amber:#c17a2e;
-    --amber-soft:#e7d9c3;
-    --danger:#a34430;
+    --accent300:#6e1800;
+    --accent200:#9a2b09;
+    --accent150:#af3713;
+    --accent120:#d14319;
+    --accent:#f24e1e;
+    --accent90:#f56a40;
+    --accent60:#f5a893;
+    --accent40:#fbc2b2;
+    --accent30:#fcd5ca;
+    --accent20:#fbe8e2;
+    --accent10:#fafafa;
+    --background:#f5f5f5;
+    --white:#ffffff;
+    --dark-text:#171f34;
+    --text-soft:#5b6273;
+    --grey30:#e0e0e0;
+    --grey40:#bdbdbd;
+    --green:#1a7a4a;
+    --green-soft:#e5f4ec;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -28,107 +37,194 @@
   html,body{height:100%;}
   body{
     margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter',system-ui,sans-serif;
+    background:var(--background);
+    color:var(--dark-text);
+    font-family:'Overpass',"Avenir Next",sans-serif;
+    font-size:16px;
+    line-height:1.6;
     -webkit-font-smoothing:antialiased;
   }
-  h1,h2,h3,.serif{font-family:'Source Serif 4',Georgia,serif;}
+  h1,h2,h3,.serif{font-family:'Libre Caslon Text',serif;font-weight:500;color:var(--dark-text);}
 
   .masthead{
-    padding:28px 20px 18px;
-    border-bottom:1px solid var(--rule);
-    background:var(--paper-raised);
+    padding:20px 18px 14px;
+    background:var(--white);
+    border-bottom:1px solid var(--grey30);
+    position:sticky;
+    top:0;
+    padding-top:calc(20px + env(safe-area-inset-top, 0px));
+    z-index:10;
   }
   .masthead-inner{max-width:640px;margin:0 auto;}
   .masthead h1{
-    font-size:28px;
-    font-weight:700;
-    margin:0 0 4px;
-    letter-spacing:-0.01em;
-    color:var(--teal-deep);
+    font-size:26px;
+    margin:0 0 3px;
+    line-height:1.2;
   }
   .masthead .dateline{
     font-size:13px;
-    color:var(--ink-soft);
+    color:var(--text-soft);
     display:flex;
     justify-content:space-between;
     align-items:baseline;
+    font-family:'Overpass',sans-serif;
   }
 
   .tabs{
     display:flex;
     gap:4px;
     max-width:640px;
-    margin:16px auto 0;
-    padding:0 20px;
+    margin:0 auto;
+    padding:8px 18px 0;
+    background:var(--white);
+    position:sticky;
+    top:calc(62px + env(safe-area-inset-top, 0px));
+    z-index:9;
+    border-bottom:1px solid var(--grey30);
   }
   .tab-btn{
     flex:1;
-    padding:10px 12px;
+    padding:10px 8px 13px;
     background:none;
     border:none;
-    border-bottom:2px solid transparent;
-    font-family:'Inter',sans-serif;
+    border-bottom:3px solid transparent;
+    font-family:'Overpass',sans-serif;
     font-size:14px;
     font-weight:600;
-    color:var(--ink-soft);
+    color:var(--text-soft);
     cursor:pointer;
     transition:color .15s ease, border-color .15s ease;
+    -webkit-tap-highlight-color:transparent;
   }
   .tab-btn.active{
-    color:var(--teal-deep);
-    border-bottom-color:var(--amber);
+    color:var(--accent);
+    border-bottom-color:var(--accent);
   }
-  .tab-btn:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+  .tab-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 
-  main{max-width:640px;margin:0 auto;padding:20px;}
+  main{max-width:640px;margin:0 auto;padding:16px 14px 40px;}
   .panel{display:none;}
   .panel.active{display:block;}
 
-  /* --- Cards / feed --- */
+  /* --- Feed cards --- */
   .entry{
-    display:flex;
-    gap:14px;
-    padding:16px 0;
-    border-bottom:1px solid var(--rule);
-  }
-  .entry:last-child{border-bottom:none;}
-  .entry img{
-    width:120px;
-    height:68px;
-    object-fit:cover;
+    display:block;
+    background:var(--white);
+    border:1px solid var(--grey30);
     border-radius:4px;
-    background:var(--rule);
-    flex-shrink:0;
+    margin-bottom:16px;
+    overflow:hidden;
+    text-decoration:none;
+    color:inherit;
+    cursor:pointer;
+    transition:box-shadow .2s ease, transform .2s ease;
+    -webkit-tap-highlight-color:transparent;
   }
-  .entry-body{min-width:0;flex:1;}
+  .entry:active{transform:translateY(1px);}
+  .entry:not(.watched):hover{
+    box-shadow:0 10px 20px var(--grey40);
+    transform:translateY(-2px);
+  }
+  .entry.watched{opacity:.45;}
+  .entry-thumb-wrap{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    background:var(--grey30);
+    overflow:hidden;
+  }
+  .entry-thumb-wrap img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    margin:0;
+  }
+  .entry-body{padding:14px 16px 16px;}
   .entry-channel{
+    display:inline-block;
+    background:var(--accent20);
+    color:var(--accent200);
+    border:thin solid var(--accent60);
     font-size:12px;
     font-weight:600;
-    color:var(--teal);
-    text-transform:none;
-    margin-bottom:2px;
+    padding:3px 12px;
+    border-radius:1.5rem;
+    margin-bottom:9px;
+    font-family:'Overpass',sans-serif;
   }
   .entry-title{
-    font-size:15px;
+    font-size:17px;
     font-weight:600;
-    line-height:1.35;
-    margin:0 0 4px;
-    color:var(--ink);
+    line-height:1.4;
+    margin:0 0 8px;
+    color:var(--dark-text);
+    font-family:'Overpass',sans-serif;
   }
-  .entry-title a{color:inherit;text-decoration:none;}
-  .entry-title a:hover{text-decoration:underline;}
-  .entry-meta{font-size:12px;color:var(--ink-soft);}
+  .entry-meta{font-size:12.5px;color:var(--text-soft);margin-bottom:14px;}
 
-  /* --- Empty / status states --- */
-  .status{
-    padding:40px 8px;
-    text-align:center;
-    color:var(--ink-soft);
+  .watched-btn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    padding:12px 16px;
+    border-radius:1px;
+    border:3px solid var(--accent);
+    background:var(--white);
+    color:var(--accent);
+    font-family:'Overpass',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    min-height:48px;
+    transition:all .2s ease;
   }
-  .status h3{color:var(--ink);margin:0 0 6px;font-size:18px;}
-  .status p{font-size:14px;line-height:1.5;margin:0 auto;max-width:420px;}
+  .watched-btn:active{background:var(--accent20);}
+  .watched-btn.is-watched{
+    background:var(--green-soft);
+    color:var(--green);
+    border-color:var(--green);
+  }
+  .watched-btn .box{
+    width:19px;
+    height:19px;
+    border-radius:3px;
+    border:2px solid currentColor;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .watched-btn.is-watched .box{background:var(--green);border-color:var(--green);}
+  .watched-btn .box svg{width:12px;height:12px;display:none;}
+  .watched-btn.is-watched .box svg{display:block;}
+
+  .watched-toggle-row{
+    text-align:center;
+    margin:4px 0 18px;
+  }
+  .watched-toggle-row button{
+    background:none;
+    border:none;
+    color:var(--text-soft);
+    font-size:13px;
+    font-weight:600;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:8px;
+    font-family:'Overpass',sans-serif;
+  }
+
+  /* --- Status / empty states --- */
+  .status{
+    padding:48px 12px;
+    text-align:center;
+    color:var(--text-soft);
+  }
+  .status h3{margin:0 0 6px;font-size:19px;}
+  .status p{font-size:14px;line-height:1.6;margin:0 auto;max-width:380px;}
 
   /* --- Buttons --- */
   .btn{
@@ -136,109 +232,120 @@
     align-items:center;
     justify-content:center;
     gap:8px;
-    padding:11px 20px;
-    border-radius:3px;
-    border:1px solid var(--teal-deep);
-    background:var(--teal-deep);
-    color:var(--paper-raised);
-    font-family:'Inter',sans-serif;
-    font-size:14px;
+    padding:15px 22px;
+    border-radius:1px;
+    border:3px solid var(--white);
+    background:var(--accent120);
+    color:var(--white);
+    font-family:'Overpass',sans-serif;
+    font-size:15px;
     font-weight:600;
     cursor:pointer;
     text-decoration:none;
+    min-height:48px;
+    -webkit-tap-highlight-color:transparent;
+    transition:all .2s ease;
   }
-  .btn:hover{background:var(--teal);}
+  .btn:active{background:var(--accent200);}
   .btn.secondary{
-    background:none;
-    color:var(--teal-deep);
+    background:var(--accent10);
+    color:var(--accent);
+    border:3px solid var(--accent);
+    padding:10px 18px;
+    font-size:13.5px;
+    min-height:40px;
   }
-  .btn.secondary:hover{background:var(--amber-soft);}
+  .btn.secondary:active{background:var(--accent20);}
   .btn:disabled{opacity:.5;cursor:default;}
 
   /* --- Settings --- */
-  .field{margin-bottom:16px;}
+  .field{margin-bottom:18px;}
   .field label{
     display:block;
-    font-size:12px;
-    font-weight:600;
-    color:var(--ink-soft);
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--text-soft);
     margin-bottom:6px;
+    font-family:'Overpass',sans-serif;
   }
   .field input{
     width:100%;
-    padding:10px 12px;
-    border:1px solid var(--rule);
-    border-radius:3px;
-    background:var(--paper-raised);
-    font-size:14px;
-    font-family:'Inter',sans-serif;
-    color:var(--ink);
+    padding:13px 14px;
+    border:1.5px solid var(--grey30);
+    border-radius:2px;
+    background:var(--white);
+    font-size:15px;
+    font-family:'Overpass',sans-serif;
+    color:var(--dark-text);
   }
-  .field input:focus{outline:2px solid var(--teal);outline-offset:1px;}
-  .field .hint{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.5;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .field .hint{font-size:12.5px;color:var(--text-soft);margin-top:6px;line-height:1.5;}
   .setup-steps{
-    background:var(--paper-raised);
-    border:1px solid var(--rule);
+    background:var(--white);
+    border:1px solid var(--grey30);
     border-radius:4px;
-    padding:16px 18px;
+    padding:18px 18px;
     margin-bottom:20px;
-    font-size:13px;
-    line-height:1.6;
-    color:var(--ink-soft);
+    font-size:13.5px;
+    line-height:1.65;
+    color:var(--text-soft);
   }
+  .setup-steps strong{color:var(--dark-text);}
   .setup-steps ol{margin:8px 0 0;padding-left:20px;}
   .setup-steps code{
-    background:var(--amber-soft);
-    padding:1px 5px;
-    border-radius:2px;
-    font-size:12px;
+    background:var(--accent20);
+    color:var(--accent200);
+    padding:2px 6px;
+    border-radius:3px;
+    font-size:12.5px;
   }
-  .setup-steps a{color:var(--teal);}
+  .setup-steps a{color:var(--accent);}
 
   .signed-in-row{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:18px;
+    margin-bottom:16px;
     font-size:13px;
-    color:var(--ink-soft);
+    color:var(--text-soft);
   }
 
   /* --- Instagram launcher --- */
   .ig-card{
-    background:var(--paper-raised);
-    border:1px solid var(--rule);
-    border-radius:6px;
-    padding:28px 24px;
+    background:var(--white);
+    border:1px solid var(--grey30);
+    border-radius:4px;
+    padding:32px 24px;
     text-align:center;
   }
-  .ig-card h2{font-size:20px;margin:0 0 8px;}
-  .ig-card p{font-size:14px;color:var(--ink-soft);line-height:1.6;margin:0 0 20px;}
+  .ig-card h2{font-size:21px;margin:0 0 8px;}
+  .ig-card p{font-size:14.5px;color:var(--text-soft);line-height:1.6;margin:0 0 22px;}
   .ig-steps{
     text-align:left;
-    font-size:13px;
-    color:var(--ink-soft);
-    background:var(--paper);
-    border-radius:4px;
-    padding:14px 18px;
-    margin-top:20px;
+    font-size:13.5px;
+    color:var(--text-soft);
+    background:var(--background);
+    border-radius:3px;
+    padding:16px 18px;
+    margin-top:22px;
     line-height:1.7;
   }
 
   .spinner{
     width:16px;height:16px;
-    border:2px solid var(--amber-soft);
-    border-top-color:var(--amber);
+    border:2px solid var(--accent20);
+    border-top-color:var(--accent);
     border-radius:50%;
     animation:spin .7s linear infinite;
     display:inline-block;
+    flex-shrink:0;
   }
   @keyframes spin{to{transform:rotate(360deg);}}
 
   .progress-line{
-    font-size:12px;
-    color:var(--ink-soft);
-    margin-bottom:14px;
+    font-size:13px;
+    color:var(--text-soft);
+    margin-bottom:16px;
     display:flex;
     align-items:center;
     gap:8px;
@@ -247,9 +354,9 @@
   footer{
     max-width:640px;
     margin:0 auto;
-    padding:24px 20px 40px;
+    padding:20px 18px 36px;
     font-size:12px;
-    color:var(--ink-soft);
+    color:var(--text-soft);
     text-align:center;
   }
 </style>
@@ -279,21 +386,22 @@
     <div id="yt-signed-out" class="status">
       <h3>Not connected yet</h3>
       <p>Connect your Google account to pull recent uploads from the channels you're subscribed to.</p>
-      <div style="margin-top:18px;">
+      <div style="margin-top:20px;">
         <button class="btn" id="yt-connect-btn">Connect Google account</button>
       </div>
-      <p style="margin-top:14px;font-size:12px;">Needs a one-time setup in Settings first.</p>
+      <p style="margin-top:16px;font-size:12.5px;">Needs a one-time setup in Settings first.</p>
     </div>
 
     <div id="yt-signed-in" style="display:none;">
       <div class="signed-in-row">
         <span id="yt-account-label">Connected</span>
-        <button class="btn secondary" id="yt-refresh-btn" style="padding:6px 14px;font-size:13px;">Refresh</button>
+        <button class="btn secondary" id="yt-refresh-btn">Refresh</button>
       </div>
       <div id="yt-progress" class="progress-line" style="display:none;">
         <span class="spinner"></span>
         <span id="yt-progress-text">Loading…</span>
       </div>
+      <div id="yt-watched-toggle" class="watched-toggle-row" style="display:none;"></div>
       <div id="yt-feed"></div>
     </div>
   </section>
@@ -321,7 +429,7 @@
         <li>Under <em>APIs &amp; Services → Library</em>, enable <strong>YouTube Data API v3</strong>.</li>
         <li>Under <em>APIs &amp; Services → OAuth consent screen</em>, choose <strong>External</strong>, fill in the required fields, and add yourself as a test user.</li>
         <li>Under <em>APIs &amp; Services → Credentials → Create Credentials → OAuth client ID</strong>, choose type <strong>Web application</strong>.</li>
-        <li>Under <em>Authorized JavaScript origins</em>, add the exact address this page is running at (e.g. <code>http://localhost:8000</code> if you're serving it locally, or your GitHub Pages URL). Note: opening the file directly with <code>file://</code> won't work — Google requires a real http/https origin, so serve it locally (<code>python3 -m http.server</code> in the folder works) or host it somewhere like GitHub Pages.</li>
+        <li>Under <em>Authorized JavaScript origins</em>, add the exact address this page is running at (your GitHub Pages URL, e.g. <code>https://yourname.github.io</code>).</li>
         <li>Copy the <strong>Client ID</strong> it gives you and paste it below.</li>
       </ol>
     </div>
@@ -332,12 +440,17 @@
       <div class="hint">Stored only in this browser, never sent anywhere but Google.</div>
     </div>
     <button class="btn" id="save-client-id-btn">Save</button>
-    <span id="save-confirm" style="margin-left:10px;font-size:13px;color:var(--teal);display:none;">Saved.</span>
+    <span id="save-confirm" style="margin-left:10px;font-size:13px;color:var(--green);font-weight:600;display:none;">Saved.</span>
 
-    <div class="field" style="margin-top:24px;">
+    <div class="field" style="margin-top:26px;">
       <label>Videos per channel</label>
       <input type="number" id="videos-per-channel" min="1" max="10" value="3">
       <div class="hint">How many recent uploads to pull per subscribed channel. Higher = slower and uses more of your daily API quota.</div>
+    </div>
+
+    <div class="field">
+      <button class="btn secondary" id="clear-watched-btn">Clear all "watched" history</button>
+      <div class="hint">Un-hides every video you've marked as watched.</div>
     </div>
   </section>
 
@@ -361,6 +474,12 @@
       $('#panel-' + btn.dataset.tab).classList.add('active');
     });
   });
+  function goToSettingsTab(){
+    $$('.tab-btn').forEach(b => b.classList.remove('active'));
+    $$('.panel').forEach(p => p.classList.remove('active'));
+    $('[data-tab="settings"]').classList.add('active');
+    $('#panel-settings').classList.add('active');
+  }
 
   // ---------- Dateline ----------
   $('#dateline-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
@@ -380,10 +499,26 @@
     initTokenClient();
   });
 
+  $('#clear-watched-btn').addEventListener('click', () => {
+    localStorage.removeItem('yt_watched_ids');
+    renderFeed();
+  });
+
+  // ---------- Watched state ----------
+  function getWatchedIds(){
+    try { return new Set(JSON.parse(localStorage.getItem('yt_watched_ids') || '[]')); }
+    catch(e){ return new Set(); }
+  }
+  function setWatchedIds(set){
+    localStorage.setItem('yt_watched_ids', JSON.stringify(Array.from(set)));
+  }
+  let showWatched = false;
+
   // ---------- Google auth ----------
   let tokenClient = null;
   let accessToken = localStorage.getItem('yt_access_token') || null;
   let tokenExpiry = parseInt(localStorage.getItem('yt_token_expiry') || '0', 10);
+  let currentVideos = [];
 
   function initTokenClient(){
     const clientId = localStorage.getItem('yt_client_id');
@@ -407,7 +542,6 @@
   }
 
   window.addEventListener('load', () => {
-    // google script loads async; poll briefly
     let tries = 0;
     const iv = setInterval(() => {
       tries++;
@@ -428,11 +562,7 @@
     const clientId = localStorage.getItem('yt_client_id');
     if (!clientId) {
       alert('Add your Google OAuth Client ID in Settings first.');
-      $$('.tab-btn').find(b => b.dataset.tab === 'settings')?.click();
-      $$('.tab-btn').forEach(b => b.classList.remove('active'));
-      $('[data-tab="settings"]').classList.add('active');
-      $$('.panel').forEach(p => p.classList.remove('active'));
-      $('#panel-settings').classList.add('active');
+      goToSettingsTab();
       return;
     }
     if (!tokenClient) initTokenClient();
@@ -472,7 +602,6 @@
     progressText.textContent = 'Fetching your subscriptions…';
 
     try {
-      // 1. Get subscriptions (up to 150, 3 pages)
       let subs = [];
       let pageToken = '';
       for (let page = 0; page < 3; page++) {
@@ -492,9 +621,8 @@
 
       const channelIds = subs.map(s => s.snippet.resourceId.channelId);
 
-      // 2. Get uploads playlist ID for each channel, batched 50 at a time
       progressText.textContent = `Looking up ${channelIds.length} channels…`;
-      let uploadsPlaylists = []; // { channelId, title, thumbnail, playlistId }
+      let uploadsPlaylists = [];
       for (let i = 0; i < channelIds.length; i += 50) {
         const batch = channelIds.slice(i, i + 50);
         const url = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails,snippet&id=${batch.join(',')}`;
@@ -509,7 +637,6 @@
       }
       uploadsPlaylists = uploadsPlaylists.filter(c => c.playlistId);
 
-      // 3. Get recent uploads per channel
       const perChannel = Math.max(1, Math.min(10, parseInt(videosPerChannelInput.value, 10) || 3));
       let allVideos = [];
       let done = 0;
@@ -530,12 +657,10 @@
                 title: sn.title,
                 publishedAt: sn.publishedAt,
                 videoId: sn.resourceId.videoId,
-                thumbnail: sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || ''
+                thumbnail: sn.thumbnails?.high?.url || sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || ''
               });
             });
-          } catch (e) {
-            // skip channels that fail (private uploads playlist, deleted, etc.)
-          }
+          } catch (e) { /* skip channels that fail */ }
           done++;
           progressText.textContent = `Loading uploads… ${done}/${uploadsPlaylists.length} channels`;
         }
@@ -544,26 +669,10 @@
       await Promise.all(Array.from({length: Math.min(concurrency, uploadsPlaylists.length)}, worker));
 
       allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-      allVideos = allVideos.slice(0, 150);
+      currentVideos = allVideos.slice(0, 150);
 
       progress.style.display = 'none';
-      $('#dateline-count').textContent = `${allVideos.length} videos · ${uploadsPlaylists.length} channels`;
-
-      if (allVideos.length === 0) {
-        feedEl.innerHTML = `<div class="status"><h3>Nothing recent</h3><p>Your subscribed channels haven't posted anything retrievable lately.</p></div>`;
-        return;
-      }
-
-      feedEl.innerHTML = allVideos.map(v => `
-        <div class="entry">
-          <img src="${v.thumbnail}" alt="" loading="lazy">
-          <div class="entry-body">
-            <div class="entry-channel">${escapeHtml(v.channelTitle)}</div>
-            <div class="entry-title"><a href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank" rel="noopener">${escapeHtml(v.title)}</a></div>
-            <div class="entry-meta">${timeAgo(v.publishedAt)}</div>
-          </div>
-        </div>
-      `).join('');
+      renderFeed();
 
     } catch (err) {
       if (err.message === 'AUTH_EXPIRED') {
@@ -576,6 +685,64 @@
       }
       showYtError(err.message || String(err));
     }
+  }
+
+  function renderFeed(){
+    const feedEl = $('#yt-feed');
+    const toggleEl = $('#yt-watched-toggle');
+    const watched = getWatchedIds();
+    const visible = currentVideos.filter(v => showWatched || !watched.has(v.videoId));
+    const hiddenCount = currentVideos.length - currentVideos.filter(v => !watched.has(v.videoId)).length;
+
+    $('#dateline-count').textContent = currentVideos.length ? `${visible.length} videos` : '';
+
+    if (hiddenCount > 0) {
+      toggleEl.style.display = 'block';
+      toggleEl.innerHTML = `<button id="toggle-watched-link">${showWatched ? 'Hide watched' : `Show ${hiddenCount} watched`}</button>`;
+      $('#toggle-watched-link').addEventListener('click', () => { showWatched = !showWatched; renderFeed(); });
+    } else {
+      toggleEl.style.display = 'none';
+    }
+
+    if (currentVideos.length === 0) {
+      feedEl.innerHTML = `<div class="status"><h3>Nothing recent</h3><p>Your subscribed channels haven't posted anything retrievable lately.</p></div>`;
+      return;
+    }
+    if (visible.length === 0) {
+      feedEl.innerHTML = `<div class="status"><h3>All caught up</h3><p>You've watched everything in this batch. Hit Refresh for anything new, or show watched videos above.</p></div>`;
+      return;
+    }
+
+    feedEl.innerHTML = visible.map(v => {
+      const isWatched = watched.has(v.videoId);
+      return `
+      <a class="entry${isWatched ? ' watched' : ''}" href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank" rel="noopener" data-video-id="${v.videoId}">
+        <div class="entry-thumb-wrap">
+          <img src="${v.thumbnail}" alt="" loading="lazy">
+        </div>
+        <div class="entry-body">
+          <span class="entry-channel">${escapeHtml(v.channelTitle)}</span>
+          <div class="entry-title">${escapeHtml(v.title)}</div>
+          <div class="entry-meta">${timeAgo(v.publishedAt)}</div>
+          <button class="watched-btn${isWatched ? ' is-watched' : ''}" data-video-id="${v.videoId}" type="button">
+            <span class="box"><svg viewBox="0 0 16 16" fill="none"><path d="M2 8.5L6 12.5L14 3.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="label">${isWatched ? 'Watched' : 'Mark as watched'}</span>
+          </button>
+        </div>
+      </a>
+    `; }).join('');
+
+    $$('.watched-btn', feedEl).forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.dataset.videoId;
+        const w = getWatchedIds();
+        if (w.has(id)) w.delete(id); else w.add(id);
+        setWatchedIds(w);
+        renderFeed();
+      });
+    });
   }
 
   function escapeHtml(s){
@@ -593,9 +760,6 @@
     if (days < 7) return `${days}d ago`;
     return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year: d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
   }
-
-  // init settings tab click helper used above
-  document.querySelectorAll('[data-tab="settings"]');
 })();
 </script>
 
