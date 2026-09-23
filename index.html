@@ -181,11 +181,27 @@
     min-height:48px;
     transition:all .2s ease;
   }
-  .watched-btn:active{background:var(--accent20);}
+  .watched-btn:hover{
+    background:var(--accent20);
+    border-color:var(--accent120);
+    color:var(--accent120);
+  }
+  .watched-btn.is-watched:hover{
+    background:#d7efe1;
+    border-color:var(--accent300);
+    color:var(--green);
+  }
+  .watched-btn:active .box{transform:scale(.85);}
   .watched-btn.is-watched{
     background:var(--green-soft);
     color:var(--green);
     border-color:var(--green);
+  }
+  .watched-btn.just-toggled{animation:watch-pop .38s ease;}
+  @keyframes watch-pop{
+    0%{transform:scale(1);}
+    35%{transform:scale(1.045);}
+    100%{transform:scale(1);}
   }
   .watched-btn .box{
     width:19px;
@@ -196,8 +212,18 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1), background .18s ease, border-color .18s ease;
   }
-  .watched-btn.is-watched .box{background:var(--green);border-color:var(--green);}
+  .watched-btn.is-watched .box{
+    background:var(--green);
+    border-color:var(--green);
+    animation:box-pop .32s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes box-pop{
+    0%{transform:scale(.6);}
+    60%{transform:scale(1.25);}
+    100%{transform:scale(1);}
+  }
   .watched-btn .box svg{width:12px;height:12px;display:none;}
   .watched-btn.is-watched .box svg{display:block;}
 
@@ -513,6 +539,7 @@
     localStorage.setItem('yt_watched_ids', JSON.stringify(Array.from(set)));
   }
   let showWatched = false;
+  let lastToggledId = null;
 
   // ---------- Google auth ----------
   let tokenClient = null;
@@ -740,9 +767,19 @@
         const w = getWatchedIds();
         if (w.has(id)) w.delete(id); else w.add(id);
         setWatchedIds(w);
+        lastToggledId = id;
         renderFeed();
       });
     });
+
+    if (lastToggledId) {
+      const justToggled = feedEl.querySelector(`.watched-btn[data-video-id="${lastToggledId}"]`);
+      if (justToggled) {
+        justToggled.classList.add('just-toggled');
+        justToggled.addEventListener('animationend', () => justToggled.classList.remove('just-toggled'), { once: true });
+      }
+      lastToggledId = null;
+    }
   }
 
   function escapeHtml(s){
